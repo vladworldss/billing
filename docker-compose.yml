@@ -30,18 +30,15 @@ services:
       timeout: 5s
       retries: 3
   rabbitmq:
-    image: "rabbitmq:3.8.2-management"
-    restart: always
-    volumes:
-      #            - ./.docker/rabbitmq/etc/:/etc/rabbitmq/
-      - ./.docker/rabbitmq/data/:/var/lib/rabbitmq/
-      - ./.docker/rabbitmq/logs/:/var/log/rabbitmq/
-    environment:
-      RABBITMQ_DEFAULT_USER: billing
-      RABBITMQ_DEFAULT_PASS: billing
+    image: rabbitmq:3-management
+    command: rabbitmq-server
     ports:
-      - 5672:5672
-      - 15672:15672
+        - 5672:5672
+        - 15672:15672
+    environment:
+      RABBITMQ_DEFAULT_USER: "billing"
+      RABBITMQ_DEFAULT_PASS: "billing"
+      RABBITMQ_DEFAULT_VHOST: "/"
   redis:
     image: redis
     ports:
@@ -73,3 +70,4 @@ services:
     depends_on:
       - db
       - redis
+      - rabbitmq
