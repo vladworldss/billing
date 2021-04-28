@@ -1,0 +1,75 @@
+version: '3.4'
+
+services:
+  db:
+    image: postgres:9.6
+    environment:
+      POSTGRES_USER: 'billing'
+      POSTGRES_PASSWORD: 'billing'
+      POSTGRES_DB: 'billing'
+      PGDATA: '/data/pgdata'
+    ports:
+      - "6432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "psql --username=$$POSTGRES_USER --list --tuples-only | grep $$POSTGRES_DB" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+  db_test:
+    image: postgres:9.6
+    environment:
+      POSTGRES_USER: 'billing'
+      POSTGRES_PASSWORD: 'billing'
+      POSTGRES_DB: 'billing'
+      PGDATA: '/data/pgdata'
+    ports:
+      - "6433:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "psql --username=$$POSTGRES_USER --list --tuples-only | grep $$POSTGRES_DB" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+  rabbitmq:
+    image: "rabbitmq:3.8.2-management"
+    restart: always
+    volumes:
+      #            - ./.docker/rabbitmq/etc/:/etc/rabbitmq/
+      - ./.docker/rabbitmq/data/:/var/lib/rabbitmq/
+      - ./.docker/rabbitmq/logs/:/var/log/rabbitmq/
+    environment:
+      RABBITMQ_DEFAULT_USER: billing
+      RABBITMQ_DEFAULT_PASS: billing
+    ports:
+      - 5672:5672
+      - 15672:15672
+  redis:
+    image: redis
+    ports:
+      - "6380:6379"
+    volumes:
+      - ./docker/wait-for-it.sh:/scripts/wait-for-it.sh
+    healthcheck:
+      test: [ "CMD-SHELL", "/scripts/wait-for-it.sh redis:6379" ]
+      interval: 60s
+      timeout: 5s
+      retries: 5
+  backend:
+    environment:
+      DB_CONNECTION: postgresql+psycopg2://billing:billing@db/billing
+      REDIS_CONNECTION: redis://redis
+    build:
+      context: ./
+      dockerfile: ./docker/backend/Dockerfile
+    ports:
+      - "8000:8000"
+      - "2222:22"
+    volumes:
+      - ./:/app
+    healthcheck:
+      test: [ "CMD-SHELL", "/scripts/wait-for-it.sh backend:8000" ]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+    depends_on:
+      - db
+      - redis
