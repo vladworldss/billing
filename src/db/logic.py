@@ -40,11 +40,24 @@ class WalletStore:
     @staticmethod
     def get_wallet_by_handshake(db_session: Session, handshake_id: str):
         wallet = db_session.query(Wallet).filter(Wallet.handshake_id == handshake_id).first()
+        if not wallet:
+            raise Exception(f'Wallet by handshake_id={handshake_id} not found')
 
         logger.debug(
             'Found wallet by handshake_id "{}": id={}'.format(handshake_id, wallet.wallet_id if wallet else None)
         )
+        return wallet.as_dict()
 
+    @staticmethod
+    def get_wallet_by_id(db_session: Session, wallet_id: int):
+        wallet = db_session.query(Wallet).filter(Wallet.wallet_id == wallet_id).first()
+        if not wallet:
+            raise Exception(f'Wallet by id={wallet_id} not found')
+
+        logger.debug(
+            'Found wallet by id={}'.format(wallet.wallet_id if wallet else None)
+        )
+        return wallet.as_dict()
 
 
 

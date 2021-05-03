@@ -4,11 +4,14 @@ from pydantic import Field
 from decimal import Decimal
 
 
-class WalletInput(BaseModel):
+class CreateWalletInput(BaseModel):
     user_id: int
-    wallet_id: typing.Optional[int] = None
-    msg: str = Field(..., title="Msg", description="Text of request", max_length=200)
     amount: Decimal
+
+
+class GetWalletInput(BaseModel):
+    user_id: int
+    wallet_id: int
 
 
 class WalletOutput(BaseModel):

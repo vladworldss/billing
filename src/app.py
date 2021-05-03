@@ -4,7 +4,7 @@ from decimal import Decimal
 from fastapi import FastAPI, BackgroundTasks
 from fastapi import HTTPException
 
-from schema import WalletInput, WalletOutput, TransactionInput, TransactionOutput
+from schema import CreateWalletInput, GetWalletInput, WalletOutput, TransactionInput, TransactionOutput
 
 from producer import basic_pub
 from db.session import open_db_session
@@ -14,14 +14,13 @@ from helpers.hash import create_handshake_id
 app = FastAPI(title="Billing")
 
 
-@app.get(
+@app.post(
     "/wallet",
     response_description="User's wallet",
-    description="Get wallet from database",
+    description="Create a new wallet by user",
     response_model=WalletOutput,
 )
-async def get_wallet(wallet_input: WalletInput):
-
+async def create_wallet(wallet_input: CreateWalletInput):
     handshake_id = create_handshake_id(wallet_input.user_id)
 
     with open_db_session(with_commit=True) as session:
@@ -32,11 +31,25 @@ async def get_wallet(wallet_input: WalletInput):
 
         return WalletOutput(**wallet)
 
-    # with open_db_session(with_commit=True) as session:
-    #     wallet = WalletStore.get_wallet_id(session, hash_id)
-    #     print(wallet)
 
+@app.get(
+    "/wallet",
+    response_description="User's wallet",
+    description="Get wallet from database",
+    response_model=WalletOutput,
+)
+async def get_wallet(wallet_input: GetWalletInput):
 
+    handshake_id = create_handshake_id(wallet_input.user_id)
+    print('HELLO GET WALLET')
+    with open_db_session() as session:
+        try:
+            # so far without authorization (any user can get wallet by id)
+            wallet = WalletStore.get_wallet_by_id(session, wallet_input.wallet_id)
+        except Exception as ex:
+                raise HTTPException(404, f'{ex}')
+
+        return WalletOutput(**wallet)
 
 
 # @app.get(
