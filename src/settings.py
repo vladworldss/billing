@@ -16,7 +16,8 @@ TESTING_DB_CONNECTION = 'postgresql+psycopg2://billing:billing@localhost:6433/bi
 DB_CONNECTION_YOYO = DB_CONNECTION.replace('+psycopg2', '')
 
 # REDIS SECTION
-REDIS_CONNECTION = 'redis://localhost:6379/0'
+# REDIS_CONNECTION = 'redis://localhost:6379/0'
+REDIS_CONNECTION = 'redis://redis'
 REDIS_CACHE_DEFAULT_TIMEOUT = 60  # 60 seconds (1 min)
 
 # AMQP SECTION
@@ -71,7 +72,6 @@ LOGGING = {
             'handlers': ['error_file', 'debug_file'],
             'propagate': False,
         },
-
         'uvicorn.error': {
             'level': 'INFO',
             'handlers': ['error_file'],

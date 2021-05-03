@@ -5,9 +5,8 @@ from sqlalchemy.orm import Session
 
 from db.models import Wallet, Transaction
 from db.constants import WalletStatuses, TransactionStatuses, Currency
-from db.constants import TransactionStatuses
 
-logger = logging.getLogger('rblb.' + __name__)
+logger = logging.getLogger('billing.' + __name__)
 
 
 class WalletStore:

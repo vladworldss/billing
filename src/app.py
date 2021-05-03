@@ -4,12 +4,16 @@ from decimal import Decimal
 from fastapi import FastAPI, BackgroundTasks
 from fastapi import HTTPException
 
-from schema import CreateWalletInput, GetWalletInput, WalletOutput, TransactionInput, TransactionOutput
+from schema import (
+    CreateWalletInput, GetWalletInput, WalletOutput, TransactionInput,
+    TransactionOutput, RedisTestInput, RedisTestOutput
+)
 
 from producer import basic_pub
 from db.session import open_db_session
 from db.logic import WalletStore, TransactionStore
 from helpers.hash import create_handshake_id
+from cache import cache
 
 app = FastAPI(title="Billing")
 
@@ -71,6 +75,34 @@ async def create_transaction(trans_input: TransactionInput):
                 trans_input.trans_sum
             )
         except Exception as ex:
-                raise HTTPException(500, f'Transaction has not been created. Info: {ex}')
+            raise HTTPException(500, f'Transaction has not been created. Info: {ex}')
 
         return TransactionOutput(**trans)
+
+
+
+@app.get(
+    "/redis",
+    response_description="Redis test",
+    description="Redis test",
+    response_model=RedisTestOutput,
+)
+async def get_redis(redis_input: RedisTestInput):
+    res = cache.get_from_cache(redis_input.handshake_id)
+    if res:
+        return RedisTestOutput(msg=res+'___FROM REDIS')
+    raise HTTPException(404, 'msg not found')
+
+
+
+@app.post(
+    "/redis",
+    response_description="Redis test",
+    description="Redis test",
+    response_model=RedisTestOutput,
+)
+async def set_redis(redis_input: RedisTestInput):
+    handshake_id = create_handshake_id(redis_input.user_id)
+    cache.set_to_cache(handshake_id, redis_input.msg)
+    print(f'________RES TO REDIS: {redis_input.msg}')
+    return RedisTestOutput(handshake_id=handshake_id)

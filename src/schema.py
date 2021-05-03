@@ -43,3 +43,13 @@ class TransactionOutput(BaseOutputModel):
     source_wallet_id: int
     destination_wallet_id: int
     info: dict
+
+
+class RedisTestInput(BaseInputModel):
+    msg: typing.Optional[str] = None
+    handshake_id: typing.Optional[str] = None
+
+
+class RedisTestOutput(BaseOutputModel):
+    msg: typing.Optional[str] = None
+    handshake_id: typing.Optional[str] = None
