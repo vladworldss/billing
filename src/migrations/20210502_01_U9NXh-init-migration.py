@@ -15,7 +15,7 @@ CREATE TYPE currency AS ENUM ('usd');
 CREATE TABLE IF NOT EXISTS wallet(
     wallet_id serial primary key,
     status wallet_status not null default 'active',
-    amount Numeric(8, 2) not null default 0.0,
+    amount Numeric(10, 2) not null default 0.0,
     created_at timestamp without time zone NOT NULL DEFAULT NOW(),
     updated_at timestamp without time zone NOT NULL DEFAULT NOW(),
     currency currency not null default 'usd',

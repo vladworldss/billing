@@ -46,7 +46,7 @@ AMQP_CONNECTION = 'amqp://{amqp_userinfo}%@localhost:5672'
         settings_file.write(settings_local)
 
 
-# dictConfig(app_settings.LOGGING)
+dictConfig(app_settings.LOGGING)
 
 ns = Collection()
 ns.add_task(init_config)

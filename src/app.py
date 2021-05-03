@@ -1,5 +1,5 @@
 from decimal import Decimal
-from random import randint
+
 
 from fastapi import FastAPI, BackgroundTasks
 from fastapi import HTTPException
@@ -9,6 +9,7 @@ from schema import WalletInput, WalletOutput, TransactionInput, TransactionOutpu
 from producer import basic_pub
 from db.session import open_db_session
 from db.logic import WalletStore
+from helpers.hash import create_handshake_id
 
 app = FastAPI(title="Billing")
 
@@ -20,20 +21,21 @@ app = FastAPI(title="Billing")
     response_model=WalletOutput,
 )
 async def get_wallet(wallet_input: WalletInput):
-    hash_id = str(randint(1000, 10 ** 5))
-    with open_db_session(with_commit=True) as session:
 
-        WalletStore.create_wallet(session, hash_id, Decimal(13232.23232))
+    handshake_id = create_handshake_id(wallet_input.user_id)
 
     with open_db_session(with_commit=True) as session:
-        wallet = WalletStore.get_wallet_id(session, hash_id)
-        print(wallet)
+        try:
+            wallet = WalletStore.create_wallet(session, handshake_id, wallet_input.amount)
+        except Exception as ex:
+                raise HTTPException(500, f'Wallet has not been created. Info: {ex}')
 
+        return WalletOutput(**wallet)
 
-        # if isinstance(wallet, Exception) or not wallet:
-        #     raise HTTPException(404, 'empry res')
+    # with open_db_session(with_commit=True) as session:
+    #     wallet = WalletStore.get_wallet_id(session, hash_id)
+    #     print(wallet)
 
-    return WalletOutput(status='ok')
 
 
 

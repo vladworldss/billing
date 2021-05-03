@@ -1,3 +1,4 @@
+import logging
 from decimal import Decimal
 
 from sqlalchemy.orm import Session
@@ -5,6 +6,8 @@ from sqlalchemy.orm import Session
 from db.models import Wallet, Transaction
 from db.constants import WalletStatuses, TransactionStatuses, Currency
 from db.constants import TransactionStatuses
+
+logger = logging.getLogger('rblb.' + __name__)
 
 
 class WalletStore:
@@ -19,25 +22,28 @@ class WalletStore:
     @staticmethod
     def create_wallet(db_session: Session, handshake_id: str, amount: Decimal):
         wallet = Wallet(
-            amount=float(amount),
+            amount=amount,
             status=WalletStatuses.ACTIVE.value,
             currency=Currency.USD.value,
             handshake_id=handshake_id
         )
         db_session.add(wallet)
         db_session.commit()
-
         db_session.refresh(wallet)
-        # w = db_session.query(Wallet).all()[-1]
-        print(f'+++++++reszzzz {wallet.wallet_id}')
+
+        logger.debug(
+            'Wallet by handshake_id "{}": id={} has been created'.format(handshake_id, wallet.wallet_id if wallet else None)
+        )
+
+        return wallet.as_dict()
 
     @staticmethod
-    def get_wallet_id(db_session: Session, handshake_id: str):
-        w = db_session.query(Wallet).filter(Wallet.handshake_id==handshake_id).first()
-        print(f'+++++++res {w}')
-        if w:
-            return w.as_dict()
+    def get_wallet_by_handshake(db_session: Session, handshake_id: str):
+        wallet = db_session.query(Wallet).filter(Wallet.handshake_id == handshake_id).first()
 
+        logger.debug(
+            'Found wallet by handshake_id "{}": id={}'.format(handshake_id, wallet.wallet_id if wallet else None)
+        )
 
 
 

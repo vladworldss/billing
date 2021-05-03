@@ -19,7 +19,7 @@ class Wallet(Base):
         Enum(*tuple((x.value for x in WalletStatuses)), name='wallet_status'),  # Dirty hack
         nullable=False
     )
-    amount = Column(Numeric(8, 2), default=0, nullable=False)
+    amount = Column(Numeric(10, 2), default=0, nullable=False)
     created_at = Column(TIMESTAMP, default=datetime.utcnow, server_default=func.now(), nullable=False)
     updated_at = Column(TIMESTAMP, default=datetime.utcnow, server_default=func.now(), nullable=False)
     currency = Column(
@@ -33,10 +33,11 @@ class Wallet(Base):
     def as_dict(self):
         return {
             'wallet_id': self.wallet_id,
+            'handshake_id': self.handshake_id,
             'status': self.status,
             'amount': self.amount,
-            'created_at': self.created_at,
-            'updated_at': self.updated_at,
+            'created_at': self.created_at.isoformat(),
+            'updated_at': self.updated_at.isoformat(),
             'currency': self.currency
         }
 
