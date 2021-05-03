@@ -48,12 +48,12 @@ class Transaction(Base):
     transaction_id = Column(BigInteger, primary_key=True, autoincrement=True)
     handshake_id = Column(CHAR(64))
     status = Column(
-        Enum(TransactionStatuses, name='transaction_status'),
+        Enum(*tuple((x.value for x in TransactionStatuses)), name='transaction_status'),
         nullable=False
     )
     source_wallet_id = Column(BigInteger, ForeignKey(Wallet.wallet_id, ondelete='CASCADE'), nullable=False)
     destination_wallet_id = Column(BigInteger, ForeignKey(Wallet.wallet_id, ondelete='CASCADE'), nullable=False)
-    trans_sum = Column(Numeric(8, 2), default=0, nullable=False)
+    trans_sum = Column(Numeric(10, 2), default=0, nullable=False)
     created_at = Column(TIMESTAMP, default=datetime.utcnow, server_default=func.now(), nullable=False)
     updated_at = Column(TIMESTAMP, default=datetime.utcnow, server_default=func.now(), nullable=False)
     info = Column(JSONB, nullable=False, default='{}')

@@ -4,20 +4,25 @@ from pydantic import Field
 from decimal import Decimal
 
 
-class CreateWalletInput(BaseModel):
+class BaseInputModel(BaseModel):
     user_id: int
+
+
+class BaseOutputModel(BaseModel):
+    handshake_id: str
+
+
+class CreateWalletInput(BaseInputModel):
     amount: Decimal
 
 
-class GetWalletInput(BaseModel):
-    user_id: int
+class GetWalletInput(BaseInputModel):
     wallet_id: int
 
 
-class WalletOutput(BaseModel):
+class WalletOutput(BaseOutputModel):
     user_id: typing.Optional[int] = None
     wallet_id: int = None
-    handshake_id: str
     status: str
     amount: Decimal
     created_at: str
@@ -25,12 +30,16 @@ class WalletOutput(BaseModel):
     currency: str
 
 
-class TransactionInput(BaseModel):
+class TransactionInput(BaseInputModel):
     """Transaction input model"""
+    source_wallet_id: int
+    dest_wallet_id: int
+    trans_sum: Decimal
 
 
-
-class TransactionOutput(BaseModel):
-    handshake_id: str
+class TransactionOutput(BaseOutputModel):
     transaction_id: int
-
+    status: str
+    source_wallet_id: int
+    destination_wallet_id: int
+    info: dict

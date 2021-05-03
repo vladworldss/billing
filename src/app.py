@@ -8,7 +8,7 @@ from schema import CreateWalletInput, GetWalletInput, WalletOutput, TransactionI
 
 from producer import basic_pub
 from db.session import open_db_session
-from db.logic import WalletStore
+from db.logic import WalletStore, TransactionStore
 from helpers.hash import create_handshake_id
 
 app = FastAPI(title="Billing")
@@ -52,40 +52,25 @@ async def get_wallet(wallet_input: GetWalletInput):
         return WalletOutput(**wallet)
 
 
-# @app.get(
-#     "/get",
-#     response_description="Random phrase",
-#     description="Get random phrase from database",
-#     response_model=PhraseOutput,
-# )
-# async def get():
-#     try:
-#         phrase = db.get(db.get_random())
-#     except IndexError:
-#         raise HTTPException(404, "Phrase list is empty")
-#     return phrase
-#
-# @app.post(
-#     "/add",
-#     response_description="Added phrase with *id* parameter",
-#     response_model=PhraseOutput,
-# )
-# async def add(phrase: PhraseInput, background_tasks: BackgroundTasks):
-#     # validate msg
-#     # создать trans_hash_id
-#     # если тип NEW - таска на создание кошелька в бд, в redis - trans_hash_id:status__created
-#     # если тип TRANS - таска на перевод в бд,в redis - trans_hash_id:status__created
-#     # возвращаем trans_hash_id
-#     phrase_out = db.add(phrase)
-#     background_tasks.add_task(basic_pub, str(phrase_out))
-#     return phrase_out
-#
-#
-#
-#
-# @app.delete("/delete", response_description="Result of deleting")
-# async def delete(id: int):
-#     try:
-#         db.delete(id)
-#     except ValueError as e:
-#         raise HTTPException(404, str(e))
+@app.post(
+    "/transaction",
+    response_description="User's transaction",
+    description="Refill wallet transaction ",
+    response_model=TransactionOutput,
+)
+async def create_transaction(trans_input: TransactionInput):
+    handshake_id = create_handshake_id(trans_input.user_id)
+
+    with open_db_session(with_commit=True) as session:
+        try:
+            trans = TransactionStore.create_transaction(
+                session,
+                handshake_id,
+                trans_input.source_wallet_id,
+                trans_input.dest_wallet_id,
+                trans_input.trans_sum
+            )
+        except Exception as ex:
+                raise HTTPException(500, f'Transaction has not been created. Info: {ex}')
+
+        return TransactionOutput(**trans)

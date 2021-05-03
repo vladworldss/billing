@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS transaction(
     status transaction_status not null default 'created',
     source_wallet_id bigint not null,
     destination_wallet_id bigint not null,
-    trans_sum Numeric(8, 2) not null default 0.0,
+    trans_sum Numeric(10, 2) not null default 0.0,
     created_at timestamp without time zone NOT NULL DEFAULT NOW(),
     updated_at timestamp without time zone NOT NULL DEFAULT NOW(),
     info JSONB not null DEFAULT '{}'::jsonb,
