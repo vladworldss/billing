@@ -11,25 +11,12 @@ from db import tasks as db_tasks
 @task
 def run_consuming(ctx):
     """
-    Starts development server
+    Starts consuming
 
     Usage:
         inv runserver
     """
-    # def foo():
-    #     flag = True
-    #     msg = f"from {os.getpid()}"
-    #     while flag:
-    #         time.sleep(10)
-    #         flag = False
-    #     return msg
 
-    # with ProcessPoolExecutor(max_workers=4) as ex:
-    #     futures = []
-    #     for _ in range(4):
-    #         futures.append(ex.submit(foo))
-    #     for future in as_completed(futures):
-    #         print(future.result())
     for _ in range(3):
         run("nohup python testz.py > /dev/null 2>&1", shell=True)
 
