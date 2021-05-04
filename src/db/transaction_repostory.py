@@ -19,9 +19,15 @@ class Repository:
             dest_wallet_id: int,
             trans_sum: Decimal
     ):
+        if trans_sum < 0:
+            msg = 'Value error: trans_sum must be positive'
+            logger.debug(msg)
+            return Transaction(status=TransactionStatuses.FAILED.value, info={'msg': msg}).as_dict()
+
         wallets = db_session.query(Wallet).filter(Wallet.wallet_id.in_([source_wallet_id, dest_wallet_id])).all()
         if not wallets:
-            raise Exception('Unknown wallets')
+            logger.debug(f'Unknown wallets source_wallet_id={source_wallet_id} dest_wallet_id={dest_wallet_id}')
+            return Transaction(status=TransactionStatuses.FAILED.value, info={'msg': 'Unknown wallets'}).as_dict()
 
         w_dict = {w.wallet_id: w for w in wallets}
         source_wallet, dest_wallet = w_dict[source_wallet_id], w_dict[dest_wallet_id]
@@ -63,7 +69,6 @@ class Repository:
             return None
 
         return trans.as_dict()
-
 
     @staticmethod
     async def a_get_transaction(trans_id: int):
