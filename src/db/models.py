@@ -44,6 +44,7 @@ class Wallet(Base):
 
 metadata = MetaData()
 
+
 wallet_table = Table(
     'wallet',
     metadata,

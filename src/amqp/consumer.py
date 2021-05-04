@@ -3,9 +3,10 @@ import structlog
 
 import pika
 
-from db.session import open_db_session
 from cache import cache
-from .config import amqp_config
+from amqp.config import amqp_config
+from schema import WalletOutput, TransactionOutput
+from db.session import open_db_session
 from db.wallet_repository import repo as wallet_repo
 from db.transaction_repostory import repo as transaction_repo
 
@@ -68,12 +69,13 @@ class WalletConsumer(Consumer):
             return
 
         action = msg.pop('action')
-
         if action == 'stop':
             raise Exception('Stop consuming')
         elif action == 'get':
             with open_db_session() as session:
                 wallet = self.wallet_repo.get_wallet_by_id(db_session=session, **msg)
+                if wallet is None:
+                    wallet = WalletOutput(status='not_found').dict()
                 cache.set_to_cache(msg['handshake_id'], wallet)
         elif action == 'create':
             with open_db_session(with_commit=True) as session:
@@ -90,13 +92,24 @@ class TransactionConsumer(Consumer):
         self.trans_repo = kw.get('transaction_repo', transaction_repo)
 
     def callback(self, channel, method, properties, body):
-        msg = json.loads(body)
-        action = msg.pop('action')
+        logger.info('____TransactionConsumer gets callback')
+        try:
+            msg = json.loads(body)
+        except Exception as ex:
+            logger.erro(f'callback except: {ex}')
+            return
 
+        action = msg.pop('action')
         if action == 'stop':
             raise Exception('Stop consuming')
+        elif action == 'get':
+            with open_db_session() as session:
+                trans = self.trans_repo.get_transaction(db_session=session, **msg)
+                if trans is None:
+                    trans = TransactionOutput(status='not_found').dict()
+                cache.set_to_cache(msg['handshake_id'], trans)
 
         elif action == 'create':
             with open_db_session(with_commit=True) as session:
-                trans = self.trans_repo.create_wallet(db_session=session, **msg)
+                trans = self.trans_repo.create_transaction(db_session=session, **msg)
                 cache.set_to_cache(msg['handshake_id'], trans)

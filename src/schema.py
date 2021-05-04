@@ -1,11 +1,10 @@
 import typing
 from pydantic import BaseModel
-from pydantic import Field
 from decimal import Decimal
 
 
 class BaseBillingModel(BaseModel):
-    user_id: int
+    user_id: typing.Optional[int] = None
     handshake_id: typing.Optional[str] = None
 
 
@@ -14,7 +13,7 @@ class CreateWalletInput(BaseBillingModel):
 
 
 class GetWalletInput(BaseBillingModel):
-    wallet_id: int
+    wallet_id: typing.Optional[int] = None
 
 
 class WalletOutput(BaseBillingModel):
@@ -40,18 +39,8 @@ class GetTransactionInput(BaseBillingModel):
 
 
 class TransactionOutput(BaseBillingModel):
-    transaction_id: int
-    status: str
-    source_wallet_id: int
-    destination_wallet_id: int
-    info: dict
-
-
-class RedisTestInput(BaseBillingModel):
-    msg: typing.Optional[str] = None
-    handshake_id: typing.Optional[str] = None
-
-
-class RedisTestOutput(BaseBillingModel):
-    msg: typing.Optional[str] = None
-    handshake_id: typing.Optional[str] = None
+    transaction_id: typing.Optional[int] = None
+    status: typing.Optional[str] = None
+    source_wallet_id: typing.Optional[int] = None
+    destination_wallet_id: typing.Optional[int] = None
+    info: typing.Optional[dict] = None

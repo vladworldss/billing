@@ -1,4 +1,6 @@
 import json
+from decimal import Decimal
+
 import structlog
 
 import pika
@@ -73,18 +75,25 @@ class WalletProducer(Producer):
 
 class TransactionProducer(Producer):
 
-    def publish_create(self, handshake_id, source_wallet_id, dest_wallet_id, trans_sum):
+    def publish_create(
+            self,
+            handshake_id: str,
+            source_wallet_id: int,
+            dest_wallet_id: int,
+            trans_sum: Decimal
+    ):
         routing_key = 'transaction.create'
         msg = json.dumps({
             'action': 'create',
             'handshake_id': handshake_id,
             'source_wallet_id': source_wallet_id,
             'dest_wallet_id': dest_wallet_id,
-            'trans_sum': trans_sum
+            'trans_sum': float(trans_sum)
         })
         self.publish(routing_key, msg)
+        logger.info(f"TransactionProducer publish_create msg={msg}")
 
-    def publish_get(self, handshake_id, transaction_id):
+    def publish_get(self, handshake_id: str, transaction_id: int):
         routing_key = 'transaction.get'
         msg = json.dumps({
             'action': 'get',
@@ -92,3 +101,4 @@ class TransactionProducer(Producer):
             'transaction_id': transaction_id
         })
         self.publish(routing_key, msg)
+        logger.info(f"TransactionProducer publish_get msg={msg}")

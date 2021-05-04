@@ -14,11 +14,12 @@ class Repository:
 
     @staticmethod
     def get_wallet(db_session: Session, wallet_id: int):
-        w = db_session.query(Wallet).filter_by(wallet_id=wallet_id).first()
-        if not w:
-            raise Exception('Wallet does not found')
+        wallet = db_session.query(Wallet).filter_by(wallet_id=wallet_id).first()
+        if not wallet:
+            logger.debug(f'Wallet by wallet_id={wallet_id} not found')
+            return None
 
-        return w.as_dict()
+        return wallet.as_dict()
 
     @staticmethod
     async def a_get_wallet(wallet_id: int):
@@ -47,7 +48,8 @@ class Repository:
     def get_wallet_by_handshake(db_session: Session, handshake_id: str):
         wallet = db_session.query(Wallet).filter(Wallet.handshake_id == handshake_id).first()
         if not wallet:
-            raise Exception(f'Wallet by handshake_id={handshake_id} not found')
+            logger.debug(f'Wallet by handshake_id={handshake_id} not found')
+            return None
 
         logger.debug(
             'Found wallet by handshake_id "{}": id={}'.format(handshake_id, wallet.wallet_id if wallet else None)
@@ -58,24 +60,13 @@ class Repository:
     def get_wallet_by_id(db_session: Session, wallet_id: int, handshake_id: str):
         wallet = db_session.query(Wallet).filter(Wallet.wallet_id == wallet_id).first()
         if not wallet:
-            raise Exception(f'Wallet by id={wallet_id} not found')
+            logger.debug(f'Wallet by wallet_id={wallet_id} not found')
+            return None
 
         logger.debug(
             'Found wallet by id={}'.format(wallet.wallet_id if wallet else None)
         )
-
         return wallet.as_dict()
-
-    # @staticmethod
-    # async def a_create_wallet(handshake_id: str, amount: Decimal):
-    #     data = {
-    #         'handshake_id': handshake_id,
-    #         'amount': amount,
-    #         'status': WalletStatuses.ACTIVE.value,
-    #         'currency' : Currency.USD.value,
-    #     }
-    #     query = wallet_table.insert().values(**data)
-    #     return await async_database.execute(query=query)
 
 
 repo = Repository()

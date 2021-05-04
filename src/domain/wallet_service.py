@@ -24,7 +24,11 @@ wallet_producer = WalletProducer()
 )
 async def create_wallet(wallet_input: CreateWalletInput, bckgr_tasks: BackgroundTasks):
     handshake_id = create_handshake_id(wallet_input.user_id)
-    bckgr_tasks.add_task(wallet_producer.publish_create, handshake_id, wallet_input.amount)
+    bckgr_tasks.add_task(
+        wallet_producer.publish_create,
+        handshake_id,
+        wallet_input.amount
+    )
     return WalletOutput(handshake_id=handshake_id)
 
 
@@ -34,19 +38,19 @@ async def create_wallet(wallet_input: CreateWalletInput, bckgr_tasks: Background
     description="Get wallet from database",
     response_model=WalletOutput,
 )
-async def get_wallet_by_id(
+async def get_wallet(
         wallet_input: GetWalletInput, background_tasks: BackgroundTasks
 ):
     if wallet_input.handshake_id:
         wallet = cache.get_from_cache(wallet_input.handshake_id)
         if wallet:
             return WalletOutput(**wallet)
-        else:
-            background_tasks.add_task(
-                wallet_producer.publish_get,
-                wallet_input.handshake_id,
-                wallet_input.wallet_id
-            )
+
+        background_tasks.add_task(
+            wallet_producer.publish_get,
+            wallet_input.handshake_id,
+            wallet_input.wallet_id
+        )
     else:
         handshake_id = create_handshake_id(wallet_input.user_id)
         background_tasks.add_task(
@@ -54,7 +58,7 @@ async def get_wallet_by_id(
             handshake_id,
             wallet_input.wallet_id
         )
-        return handshake_id
+        return WalletOutput(handshake_id=handshake_id)
 
 
 @wallet.get(

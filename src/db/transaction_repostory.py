@@ -25,6 +25,7 @@ class Repository:
 
         w_dict = {w.wallet_id: w for w in wallets}
         source_wallet, dest_wallet = w_dict[source_wallet_id], w_dict[dest_wallet_id]
+        trans_sum = Decimal(trans_sum)
 
         trans = Transaction(
             handshake_id=handshake_id,
@@ -49,6 +50,20 @@ class Repository:
         db_session.refresh(trans)
 
         return trans.as_dict()
+
+    @staticmethod
+    def get_transaction(
+            db_session: Session,
+            transaction_id: int,
+            **kw
+    ):
+        trans = db_session.query(Transaction).filter_by(transaction_id=transaction_id).first()
+        if not trans:
+            logger.debug(f'Transaction by transaction_id={transaction_id} not found')
+            return None
+
+        return trans.as_dict()
+
 
     @staticmethod
     async def a_get_transaction(trans_id: int):
