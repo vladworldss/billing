@@ -4,40 +4,42 @@ from pydantic import Field
 from decimal import Decimal
 
 
-class BaseInputModel(BaseModel):
+class BaseBillingModel(BaseModel):
     user_id: int
+    handshake_id: typing.Optional[str] = None
 
 
-class BaseOutputModel(BaseModel):
-    handshake_id: str
-
-
-class CreateWalletInput(BaseInputModel):
+class CreateWalletInput(BaseBillingModel):
     amount: Decimal
 
 
-class GetWalletInput(BaseInputModel):
+class GetWalletInput(BaseBillingModel):
     wallet_id: int
 
 
-class WalletOutput(BaseOutputModel):
+class WalletOutput(BaseBillingModel):
     user_id: typing.Optional[int] = None
-    wallet_id: int = None
-    status: str
-    amount: Decimal
-    created_at: str
-    updated_at: str
-    currency: str
+    wallet_id: typing.Optional[int] = None
+    status: typing.Optional[str] = None
+    amount: typing.Optional[Decimal] = None
+    created_at: typing.Optional[str] = None
+    updated_at: typing.Optional[str] = None
+    currency: typing.Optional[str] = None
 
 
-class TransactionInput(BaseInputModel):
-    """Transaction input model"""
+class CreateTransactionInput(BaseBillingModel):
+    """create transaction input model"""
     source_wallet_id: int
     dest_wallet_id: int
     trans_sum: Decimal
 
 
-class TransactionOutput(BaseOutputModel):
+class GetTransactionInput(BaseBillingModel):
+    """get transaction input model"""
+    transaction_id: int
+
+
+class TransactionOutput(BaseBillingModel):
     transaction_id: int
     status: str
     source_wallet_id: int
@@ -45,11 +47,11 @@ class TransactionOutput(BaseOutputModel):
     info: dict
 
 
-class RedisTestInput(BaseInputModel):
+class RedisTestInput(BaseBillingModel):
     msg: typing.Optional[str] = None
     handshake_id: typing.Optional[str] = None
 
 
-class RedisTestOutput(BaseOutputModel):
+class RedisTestOutput(BaseBillingModel):
     msg: typing.Optional[str] = None
     handshake_id: typing.Optional[str] = None

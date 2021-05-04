@@ -1,7 +1,8 @@
 from datetime import datetime
 
 from sqlalchemy import (
-    Column, BigInteger, CHAR, Numeric, TIMESTAMP, Enum, func, ForeignKey, CheckConstraint
+    Column, BigInteger, CHAR, Numeric, TIMESTAMP, Enum, func, ForeignKey, CheckConstraint,
+    Table, MetaData
 )
 from sqlalchemy.dialects.postgresql.json import JSONB
 from sqlalchemy.ext.declarative import declarative_base
@@ -41,6 +42,27 @@ class Wallet(Base):
             'currency': self.currency
         }
 
+metadata = MetaData()
+
+wallet_table = Table(
+    'wallet',
+    metadata,
+    Column('wallet_id', BigInteger, primary_key=True, autoincrement=True),
+    Column('status',
+        Enum(*tuple((x.value for x in WalletStatuses)), name='wallet_status'),  # Dirty hack
+        nullable=False
+    ),
+    Column('amount', Numeric(10, 2), default=0, nullable=False),
+    Column('created_at', TIMESTAMP, default=datetime.utcnow, server_default=func.now(), nullable=False),
+    Column('updated_at', TIMESTAMP, default=datetime.utcnow, server_default=func.now(), nullable=False),
+    Column('currency',
+        Enum(*tuple((x.value for x in Currency)), name='wallet_currency'),
+        nullable=False
+    ),
+    Column('handshake_id', CHAR(64)),
+    CheckConstraint('amount > 0', 'positive_amount')
+)
+
 
 class Transaction(Base):
     __tablename__ = 'transaction'
@@ -72,3 +94,23 @@ class Transaction(Base):
             'updated_at': self.updated_at,
             'info': self.info
         }
+
+
+transaction_table = Table(
+    'transaction',
+    metadata,
+    Column('transaction_id', BigInteger, primary_key=True, autoincrement=True),
+    Column('handshake_id', CHAR(64)),
+    Column(
+        'status',
+        Enum(*tuple((x.value for x in TransactionStatuses)), name='transaction_status'),
+        nullable=False
+    ),
+    Column('source_wallet_id', BigInteger, ForeignKey(Wallet.wallet_id, ondelete='CASCADE'), nullable=False),
+    Column('destination_wallet_id', BigInteger, ForeignKey(Wallet.wallet_id, ondelete='CASCADE'), nullable=False),
+    Column('trans_sum', Numeric(10, 2), default=0, nullable=False),
+    Column('created_at', TIMESTAMP, default=datetime.utcnow, server_default=func.now(), nullable=False),
+    Column('updated_at', TIMESTAMP, default=datetime.utcnow, server_default=func.now(), nullable=False),
+    Column('info', JSONB, nullable=False, default='{}'),
+    CheckConstraint('source_wallet_id != destination_wallet_id', 'non_self_transaction')
+)

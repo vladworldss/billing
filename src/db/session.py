@@ -2,6 +2,7 @@ import sys
 from contextlib import contextmanager
 from typing import ContextManager
 
+from databases import Database
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 
@@ -28,3 +29,6 @@ def open_db_session(with_commit=False) -> ContextManager[Session]:
         raise
 
     session.close()
+
+
+async_database = Database(app_settings.DB_CONNECTION_YOYO)

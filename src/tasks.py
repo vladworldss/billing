@@ -1,26 +1,11 @@
 import os
-from logging.config import dictConfig
 
 from invoke import task, Collection
-from subprocess import run
 
 import settings as app_settings
 from cache import tasks as cache_tasks
 from db import tasks as db_tasks
-
-
-@task
-def run_consuming(ctx):
-    """
-    Starts consuming
-
-    Usage:
-        inv runserver
-    """
-
-    for _ in range(3):
-        run("nohup python testz.py > /dev/null 2>&1", shell=True)
-
+from amqp import tasks as amqp_tasks
 
 
 @task
@@ -47,10 +32,9 @@ AMQP_CONNECTION = 'amqp://{amqp_userinfo}%@localhost:5672'
         settings_file.write(settings_local)
 
 
-# dictConfig(app_settings.LOGGING)
-
 ns = Collection()
 ns.add_task(init_config)
-ns.add_task(run_consuming)
+
 ns.add_collection(Collection.from_module(cache_tasks), name='cache')
 ns.add_collection(Collection.from_module(db_tasks), name='db')
+ns.add_collection(Collection.from_module(amqp_tasks), name='amqp')

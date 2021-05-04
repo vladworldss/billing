@@ -1,15 +1,16 @@
-import logging
 from decimal import Decimal
 
+import structlog
 from sqlalchemy.orm import Session
 
-from db.models import Wallet, Transaction
-from db.constants import WalletStatuses, TransactionStatuses, Currency
+from db.constants import WalletStatuses, Currency
+from db.models import Wallet, wallet_table
+from db.session import async_database
 
-logger = logging.getLogger('billing.' + __name__)
+logger = structlog.get_logger(__name__)
 
 
-class WalletStore:
+class Repository:
 
     @staticmethod
     def get_wallet(db_session: Session, wallet_id: int):
@@ -18,6 +19,11 @@ class WalletStore:
             raise Exception('Wallet does not found')
 
         return w.as_dict()
+
+    @staticmethod
+    async def a_get_wallet(wallet_id: int):
+        q = wallet_table.select(wallet_table.c.wallet_id == wallet_id)
+        return await async_database.fetch_one(query=q)
 
     @staticmethod
     def create_wallet(db_session: Session, handshake_id: str, amount: Decimal):
@@ -49,7 +55,7 @@ class WalletStore:
         return wallet.as_dict()
 
     @staticmethod
-    def get_wallet_by_id(db_session: Session, wallet_id: int):
+    def get_wallet_by_id(db_session: Session, wallet_id: int, handshake_id: str):
         wallet = db_session.query(Wallet).filter(Wallet.wallet_id == wallet_id).first()
         if not wallet:
             raise Exception(f'Wallet by id={wallet_id} not found')
@@ -60,44 +66,16 @@ class WalletStore:
 
         return wallet.as_dict()
 
+    # @staticmethod
+    # async def a_create_wallet(handshake_id: str, amount: Decimal):
+    #     data = {
+    #         'handshake_id': handshake_id,
+    #         'amount': amount,
+    #         'status': WalletStatuses.ACTIVE.value,
+    #         'currency' : Currency.USD.value,
+    #     }
+    #     query = wallet_table.insert().values(**data)
+    #     return await async_database.execute(query=query)
 
-class TransactionStore:
 
-    @staticmethod
-    def create_transaction(
-            db_session: Session,
-            handshake_id: str,
-            source_wallet_id: int,
-            dest_wallet_id: int,
-            summ: Decimal
-    ) -> dict:
-        wallets = db_session.query(Wallet).filter(Wallet.wallet_id.in_([source_wallet_id, dest_wallet_id])).all()
-        if not wallets:
-            raise Exception('Unknown wallets')
-
-        w_dict = {w.wallet_id: w for w in wallets}
-        source_wallet, dest_wallet = w_dict[source_wallet_id], w_dict[dest_wallet_id]
-
-        trans = Transaction(
-            handshake_id=handshake_id,
-            source_wallet_id=source_wallet_id,
-            destination_wallet_id=dest_wallet_id,
-            trans_sum=summ
-        )
-
-        new_amount = Decimal(source_wallet.amount) - summ
-        if new_amount < 0:
-            trans.status = TransactionStatuses.FAILED.value
-            trans.info = {'msg': f'wallet {source_wallet_id} does not have enough money'}
-
-        else:
-            trans.status = TransactionStatuses.PROCESSED.value
-            trans.info = {'msg': f'transaction was successful'}
-            source_wallet.amount = new_amount
-            dest_wallet.amount += summ
-
-        db_session.add(trans)
-        db_session.commit()
-        db_session.refresh(trans)
-
-        return trans.as_dict()
+repo = Repository()

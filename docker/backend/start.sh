@@ -8,5 +8,6 @@ mkdir -p logs
 
 invoke db.migration-apply
 invoke cache.flush-db
-#invoke run_consuming
+invoke amqp.run-wallet-consuming
+invoke amqp.run-trans-consuming
 uvicorn --host 0.0.0.0 --port 8000 app:app --reload

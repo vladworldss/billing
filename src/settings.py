@@ -18,11 +18,26 @@ DB_CONNECTION_YOYO = DB_CONNECTION.replace('+psycopg2', '')
 # REDIS SECTION
 # REDIS_CONNECTION = 'redis://localhost:6379/0'
 REDIS_CONNECTION = 'redis://redis'
-REDIS_CACHE_DEFAULT_TIMEOUT = 60  # 60 seconds (1 min)
+REDIS_CACHE_DEFAULT_TIMEOUT = 10*60  # 60 seconds (10 min)
 
 # AMQP SECTION
 
-AMQPS = {}
+AMQPS = {
+    'host': 'rabbitmq',
+    # 'host': 'localhost',
+    'port': 5672,
+    'vhost': '/',
+    'user': 'billing',
+    'pwd': 'billing',
+    'exchange': {
+        'name': 'billing',
+        'type': 'topic'
+    },
+    'queue': {
+        'wallet_queue': 'wallet.*',
+        'transaction_queue': 'transaction.*'
+    }
+}
 
 
 # LOGGING
