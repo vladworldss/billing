@@ -1,4 +1,3 @@
-import time
 from invoke import task
 
 import settings as app_settings
@@ -9,6 +8,14 @@ def migration_apply(ctx):
     print('Start migration apply...')
     command = 'yoyo apply --database {db_connection} migrations --no-config-file --batch'
     ctx.run(command.format(db_connection=app_settings.DB_CONNECTION_YOYO))
+    print('Success')
+
+
+@task
+def test_migration_apply(ctx):
+    print('Start test migration apply...')
+    command = 'yoyo apply --database {db_connection} migrations --no-config-file --batch'
+    ctx.run(command.format(db_connection=app_settings.TESTING_DB_CONNECTION_YOYO))
     print('Success')
 
 

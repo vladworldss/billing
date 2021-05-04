@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y openssh-server && \
     echo 'cd /app/src' >> /root/.bashrc
 
 COPY ./src/.meta/ /app/src/.meta/
-RUN pip install --pre -U -r /app/src/.meta/packages
+RUN pip install --pre -U -r /app/src/.meta/packages.dev
 
 VOLUME ["/app"]
 COPY ./docker/backend/start.sh ./docker/wait-for-it.sh /scripts/

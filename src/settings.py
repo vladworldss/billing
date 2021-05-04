@@ -14,6 +14,7 @@ DB_CONNECTION = 'postgresql+psycopg2://billing:billing@db/billing'
 # DB_CONNECTION = 'postgresql+psycopg2://billing:billing@localhost:6432/billing'
 TESTING_DB_CONNECTION = 'postgresql+psycopg2://billing:billing@localhost:6433/billing'
 DB_CONNECTION_YOYO = DB_CONNECTION.replace('+psycopg2', '')
+TESTING_DB_CONNECTION_YOYO = TESTING_DB_CONNECTION.replace('+psycopg2', '')
 
 # REDIS SECTION
 # REDIS_CONNECTION = 'redis://localhost:6379/0'

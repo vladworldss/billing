@@ -1,0 +1,5 @@
+-r packages
+
+flake8==3.3.0
+pylint==2.2.2
+pytest==3.0.5
