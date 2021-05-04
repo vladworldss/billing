@@ -35,7 +35,7 @@ class CreateTransactionInput(BaseBillingModel):
 
 class GetTransactionInput(BaseBillingModel):
     """get transaction input model"""
-    transaction_id: int
+    transaction_id: typing.Optional[int] = None
 
 
 class TransactionOutput(BaseBillingModel):
