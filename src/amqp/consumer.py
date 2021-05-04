@@ -9,7 +9,6 @@ from .config import amqp_config
 from db.wallet_repository import repo as wallet_repo
 from db.transaction_repostory import repo as transaction_repo
 
-consumer_tag = None
 logger = structlog.get_logger(__name__)
 
 

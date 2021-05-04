@@ -34,4 +34,3 @@ def migration_rollback(ctx, revision):
     command = 'yoyo rollback --database {db_connection} migrations --no-config-file --batch -r {revision}'
     ctx.run(command.format(db_connection=app_settings.DB_CONNECTION_YOYO, revision=revision))
     print('Success')
-
