@@ -46,12 +46,6 @@ async def get_wallet(
         if wallet:
             return WalletOutput(**wallet)
 
-        background_tasks.add_task(
-            wallet_producer.publish_get,
-            wallet_input.handshake_id,
-            wallet_input.wallet_id
-        )
-    else:
         handshake_id = create_handshake_id(wallet_input.user_id)
         background_tasks.add_task(
             wallet_producer.publish_get,

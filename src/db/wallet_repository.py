@@ -13,15 +13,6 @@ logger = structlog.get_logger(__name__)
 class Repository:
 
     @staticmethod
-    def get_wallet(db_session: Session, wallet_id: int):
-        wallet = db_session.query(Wallet).filter_by(wallet_id=wallet_id).first()
-        if not wallet:
-            logger.debug(f'Wallet by wallet_id={wallet_id} not found')
-            return None
-
-        return wallet.as_dict()
-
-    @staticmethod
     async def a_get_wallet(wallet_id: int):
         q = wallet_table.select(wallet_table.c.wallet_id == wallet_id)
         return await async_database.fetch_one(query=q)
@@ -57,14 +48,14 @@ class Repository:
         return wallet.as_dict()
 
     @staticmethod
-    def get_wallet_by_id(db_session: Session, wallet_id: int, handshake_id: str):
+    def get_wallet_by_id(db_session: Session, wallet_id: int, handshake_id: str = None):
         wallet = db_session.query(Wallet).filter(Wallet.wallet_id == wallet_id).first()
         if not wallet:
             logger.debug(f'Wallet by wallet_id={wallet_id} not found')
             return None
 
         logger.debug(
-            'Found wallet by id={}'.format(wallet.wallet_id if wallet else None)
+            'Found wallet by id={}'.format(wallet.wallet_id)
         )
         return wallet.as_dict()
 

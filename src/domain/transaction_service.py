@@ -55,7 +55,7 @@ async def get_transaction_by(trans_input: GetTransactionInput, background_tasks:
 
 
 @transaction.get(
-    "/async/",
+    "/async",
     response_description="User's transaction",
     description="Get wallet transaction ",
     response_model=TransactionOutput,

@@ -29,8 +29,8 @@ def test_transaction():
             trans_sum=1500
         )
 
-        source_wallet = wallet_repo.get_wallet(session, source_wallet['wallet_id'])
-        dest_wallet = wallet_repo.get_wallet(session, dest_wallet['wallet_id'])
+        source_wallet = wallet_repo.get_wallet_by_id(session, source_wallet['wallet_id'])
+        dest_wallet = wallet_repo.get_wallet_by_id(session, dest_wallet['wallet_id'])
 
         new_source_amount = source_wallet["amount"]
         new_dest_amount = dest_wallet["amount"]

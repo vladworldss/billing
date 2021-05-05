@@ -6,6 +6,7 @@ import pika
 from cache import cache
 from amqp.config import amqp_config
 from schema import WalletOutput, TransactionOutput
+from db.constants import TransactionStatuses
 from db.session import open_db_session
 from db.wallet_repository import repo as wallet_repo
 from db.transaction_repostory import repo as transaction_repo
@@ -90,6 +91,7 @@ class TransactionConsumer(Consumer):
     def __init__(self, *args, **kw):
         super().__init__(*args, **kw)
         self.trans_repo = kw.get('transaction_repo', transaction_repo)
+        self.wallet_repo = kw.get('wallet_repo', wallet_repo)
 
     def callback(self, channel, method, properties, body):
         logger.info('____TransactionConsumer gets callback')
@@ -112,4 +114,17 @@ class TransactionConsumer(Consumer):
         elif action == 'create':
             with open_db_session(with_commit=True) as session:
                 trans = self.trans_repo.create_transaction(db_session=session, **msg)
+                if trans['status'] != TransactionStatuses.PROCESSED.value:
+                    return
+
+                s_wallet = self.wallet_repo.get_wallet_by_id(session, msg['source_wallet_id'])
+                s_handshake = s_wallet['handshake_id']
+
+                d_wallet = self.wallet_repo.get_wallet_by_id(session, msg['dest_wallet_id'])
+                d_handshake = d_wallet['handshake_id']
+                # clear invalid wallets in cache
+                logger.info(f'___DELETE KEYS \n{s_handshake}\n {d_handshake}\n from cache')
+                cache.delete(s_handshake)
+                cache.delete(d_handshake)
+                # set result of transaction
                 cache.set_to_cache(msg['handshake_id'], trans)

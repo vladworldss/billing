@@ -48,3 +48,13 @@ Db credentials for local (not-in-docker) deploy:
   docker-compose stop backend
   docker-compose up -d --build backend
   ```
+* **For testing**
+After all we need to apply our migrations to test DB
+
+```shell
+cd {project_dir}/src
+inv db.test-migration-apply
+```
+```shell
+python -m pytest -s tests db/tests/test_models.py
+```
